@@ -29,10 +29,18 @@ class Strategy(Base):
     
     # Strategy parameters
     grid_levels = Column(Integer, default=10)
-    grid_profit_per_trade = Column(Float, default=0.1)
+    grid_profit_per_trade = Column(Float, default=0.1)  # % прибыль за сделку
+    grid_step = Column(Float, default=0.1)  # % шаг между уровнями сетки
+    lot_size = Column(Float, default=1.0)  # размер одного лота
     atr_period = Column(Integer, default=14)
     atr_multiplier = Column(Float, default=2.0)
     reverse_mode = Column(Boolean, default=False)
+    
+    # Grid adaptation parameters
+    last_grid_rebuild = Column(DateTime, nullable=True)  # Когда была последняя перестройка
+    extreme_position_detected = Column(DateTime, nullable=True)  # Когда обнаружена крайняя позиция
+    needs_rebuild = Column(Boolean, default=False)  # Нужна ли перестройка сетки
+    rebuild_interval_minutes = Column(Integer, default=60)  # Интервал перестройки (минуты)
     
     # Risk parameters
     max_position_size = Column(Float, default=50.0)

@@ -1,0 +1,88 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '*.md'
+      - 'docs/**'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+    
+    - name: Build documentation
+      run: |
+        # Create docs directory if it doesn't exist
+        mkdir -p docs
+        
+        # Copy markdown files
+        cp README.md docs/
+        cp CONTRIBUTING.md docs/
+        cp SECURITY.md docs/
+        cp CHANGELOG.md docs/
+        cp DOCKER_GUIDE.md docs/
+        cp DOCKER_QUICKSTART.md docs/
+        cp DOCKER_CHEATSHEET.md docs/
+        
+        # Create index.html
+        cat > docs/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Trading Bot Documentation</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
+            <style>
+                .markdown-body { max-width: 900px; margin: 20px auto; padding: 20px; }
+                body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif; }
+                nav { background: #f6f8fa; padding: 10px 20px; margin-bottom: 20px; }
+                nav a { margin-right: 15px; text-decoration: none; color: #0366d6; }
+                nav a:hover { text-decoration: underline; }
+            </style>
+        </head>
+        <body>
+            <nav>
+                <a href="/">Home</a>
+                <a href="README.md">Getting Started</a>
+                <a href="DOCKER_QUICKSTART.md">Quick Start</a>
+                <a href="DOCKER_GUIDE.md">Docker Guide</a>
+                <a href="CONTRIBUTING.md">Contributing</a>
+                <a href="SECURITY.md">Security</a>
+            </nav>
+            <div class="markdown-body">
+                <h1>Trading Bot Documentation</h1>
+                <p>Welcome to the Adaptive Grid Trading Bot documentation!</p>
+                <p>See <a href="README.md">README</a> to get started.</p>
+            </div>
+        </body>
+        </html>
+        EOF
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: 'docs'
+    
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2

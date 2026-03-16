@@ -4,6 +4,18 @@ import { useStrategies, useStrategyOrders, useStrategyTrades } from "@/hooks/use
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Line } from "recharts";
 
+/**
+ * Main Dashboard Component
+ * 
+ * Displays trading bot overview with:
+ * - Portfolio statistics (balance, active orders, P&L, win rate)
+ * - Real-time orders table
+ * - Recent trades table
+ * - Equity curve chart
+ * - Strategy status
+ * 
+ * Updates automatically with configured refetch intervals.
+ */
 export default function Dashboard() {
   const { data: strategies = [], isLoading, error } = useStrategies();
   const [selectedStrategy] = useState<number | null>(strategies[0]?.id ?? null);

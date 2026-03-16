@@ -1,0 +1,162 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: trader
+          POSTGRES_PASSWORD: trader
+          POSTGRES_DB: trading_bot
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-asyncio
+    
+    - name: Lint with flake8
+      working-directory: ./backend
+      run: |
+        pip install flake8
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 app --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings
+        flake8 app --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Type check with mypy
+      working-directory: ./backend
+      run: |
+        pip install mypy
+        mypy app --ignore-missing-imports --no-error-summary 2>/dev/null || true
+    
+    - name: Run tests
+      working-directory: ./backend
+      run: pytest tests/ -v --tb=short
+      env:
+        DATABASE_URL: postgresql://trader:trader@localhost:5432/trading_bot
+        REDIS_URL: redis://localhost:6379/0
+        BINANCE_TESTNET: "true"
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Lint
+      working-directory: ./frontend
+      run: npm run lint --if-present
+    
+    - name: Type check
+      working-directory: ./frontend
+      run: npm run type-check --if-present
+    
+    - name: Build
+      working-directory: ./frontend
+      run: npm run build
+    
+    - name: Run tests
+      working-directory: ./frontend
+      run: npm test --if-present
+
+  docker-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build backend
+      uses: docker/build-push-action@v4
+      with:
+        context: ./backend
+        file: ./docker/Dockerfile.backend
+        push: false
+        tags: trading-bot-backend:latest
+    
+    - name: Build frontend
+      uses: docker/build-push-action@v4
+      with:
+        context: ./frontend
+        file: ./docker/Dockerfile.frontend
+        push: false
+        tags: trading-bot-frontend:latest
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Run pylint
+      working-directory: ./backend
+      run: |
+        pip install pylint
+        pip install -r requirements.txt
+        pylint app --disable=all --enable=E,F || true
+    
+    - name: Check for security issues
+      working-directory: ./backend
+      run: |
+        pip install bandit
+        bandit -r app -f json -o bandit-report.json || true
+    
+    - name: Check YAML
+      run: |
+        pip install pyyaml
+        python -c "import yaml; yaml.safe_load(open('docker-compose.yml'))"

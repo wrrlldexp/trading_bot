@@ -117,6 +117,21 @@ BINANCE_TESTNET=true
 
 ### 3. Start the Bot
 
+**Option A: Using Docker Compose (Recommended)**
+
+```bash
+docker-compose up -d
+```
+
+**Option B: Using convenient script**
+
+```bash
+chmod +x scripts/docker-manage.sh
+./scripts/docker-manage.sh up
+```
+
+**Option C: Using legacy start script**
+
 ```bash
 chmod +x scripts/start.sh
 ./scripts/start.sh
@@ -139,7 +154,23 @@ This will:
 🔍 API ReDoc:      http://localhost:8000/redoc
 ```
 
-### 5. Create First Strategy
+### 5. Useful Management Commands
+
+```bash
+# Check all services status
+docker-compose ps
+
+# View backend logs
+docker-compose logs -f backend
+
+# OR use the convenient management script
+./scripts/docker-manage.sh health        # Check all services
+./scripts/docker-manage.sh logs backend  # View backend logs
+./scripts/docker-manage.sh restart       # Restart all services
+./scripts/docker-manage.sh down          # Stop all services
+```
+
+### 6. Create First Strategy
 
 1. Go to http://localhost:3000
 2. Click "Create Strategy"
@@ -152,7 +183,7 @@ This will:
    - ATR Multiplier: 2.0
 4. Click "Create"
 
-### 6. Start Trading
+### 7. Start Trading
 
 1. Select your strategy from dashboard
 2. Click "Start Strategy"

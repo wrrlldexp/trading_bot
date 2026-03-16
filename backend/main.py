@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import Base, engine, SessionLocal
 from app.core.demo_data import create_demo_data
-from app.routes import strategy, trades, health
+from app.routes import strategy, trades, health, grid_management
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -48,6 +48,7 @@ app.add_middleware(
 app.include_router(strategy.router)
 app.include_router(trades.router)
 app.include_router(health.router)
+app.include_router(grid_management.router)
 
 
 @app.on_event("startup")

@@ -16,7 +16,18 @@ def get_orders(
     status: str = None,
     db: Session = Depends(get_db)
 ):
-    """Get orders with optional filtering."""
+    """
+    Get paginated list of orders with optional status filtering.
+    
+    Args:
+        skip: Number of records to skip for pagination (default: 0)
+        limit: Maximum number of records to return (default: 100)
+        status: Optional filter by order status (open, filled, cancelled, failed)
+        db: Database session dependency
+        
+    Returns:
+        List of OrderResponse objects
+    """
     query = db.query(Order)
     
     if status:
@@ -27,7 +38,19 @@ def get_orders(
 
 @router.get("/orders/{order_id}", response_model=OrderResponse)
 def get_order(order_id: int, db: Session = Depends(get_db)):
-    """Get specific order."""
+    """
+    Get a specific order by ID.
+    
+    Args:
+        order_id: The ID of the order to retrieve
+        db: Database session dependency
+        
+    Returns:
+        OrderResponse object
+        
+    Raises:
+        HTTPException(404): If order is not found
+    """
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -41,7 +64,18 @@ def get_trades(
     status: str = None,
     db: Session = Depends(get_db)
 ):
-    """Get trades with optional filtering."""
+    """
+    Get paginated list of trades with optional status filtering.
+    
+    Args:
+        skip: Number of records to skip for pagination (default: 0)
+        limit: Maximum number of records to return (default: 100)
+        status: Optional filter by trade status (pending, open, closed, cancelled)
+        db: Database session dependency
+        
+    Returns:
+        List of TradeResponse objects
+    """
     query = db.query(Trade)
     
     if status:
@@ -52,7 +86,19 @@ def get_trades(
 
 @router.get("/trades/{trade_id}", response_model=TradeResponse)
 def get_trade(trade_id: int, db: Session = Depends(get_db)):
-    """Get specific trade."""
+    """
+    Get a specific trade by ID.
+    
+    Args:
+        trade_id: The ID of the trade to retrieve
+        db: Database session dependency
+        
+    Returns:
+        TradeResponse object
+        
+    Raises:
+        HTTPException(404): If trade is not found
+    """
     trade = db.query(Trade).filter(Trade.id == trade_id).first()
     if not trade:
         raise HTTPException(status_code=404, detail="Trade not found")

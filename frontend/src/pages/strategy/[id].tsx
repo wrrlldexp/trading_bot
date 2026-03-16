@@ -4,6 +4,16 @@ import { useStrategy, useStrategyOrders, useStrategyTrades } from "@/hooks/useAp
 import { useRouter } from "next/router";
 import Link from "next/link";
 
+/**
+ * Strategy Detail Page Component
+ * 
+ * Displays detailed information about a specific trading strategy including:
+ * - Strategy overview (name, status, profit/loss, ROI)
+ * - Active orders
+ * - Trade history
+ * 
+ * Uses dynamic routing with strategy ID from URL parameters.
+ */
 export default function StrategyDetail() {
   const router = useRouter();
   const { id } = router.query;
