@@ -2,7 +2,7 @@
 
 import { useStrategies, useStrategyOrders, useStrategyTrades } from "@/hooks/useApi";
 import { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Line } from "recharts";
+import { Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Line } from "recharts";
 
 /**
  * Main Dashboard Component
